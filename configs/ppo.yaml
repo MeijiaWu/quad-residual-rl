@@ -1,0 +1,60 @@
+# PPO hyper-parameters. Read by scripts/train_sim_lite.py (``sim_lite`` block);
+# the ``isaac`` block is for the rsl_rl runner once the Isaac Lab env is ported.
+# Override any value from the command line, e.g.
+#   python scripts/train_sim_lite.py --set ppo.sim_lite.init_noise_std=0.3
+
+sim_lite:                      # stable-baselines3 PPO on the CPU env
+  num_envs: 64
+  total_steps: 300000
+  n_steps: 64                  # rollout length per env -> 64 x 64 = 4096 per update
+  batch_size: 1024
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  learning_rate: 3.0e-4
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+  net_arch: [128, 128]
+  activation: tanh             # tanh | elu | relu
+  init_noise_std: 0.5          # residual wants a small initial std: with std 1 and
+                               # residual_scale 0.25 random actions flip the aircraft
+  curriculum_fraction: 0.6     # randomization ramps nominal -> full over this
+                               # fraction of total_steps; 0 = full from the start
+
+isaac:                         # rsl_rl, thousands of parallel envs on GPU
+  algorithm: PPO
+  num_envs: 4096
+  num_steps_per_env: 24
+  max_iterations: 2000
+  seed: 0
+  policy:
+    actor_hidden_dims: [128, 128]
+    critic_hidden_dims: [128, 128]
+    activation: elu
+    init_noise_std: 0.5
+  ppo:
+    gamma: 0.99
+    lam: 0.95
+    clip_param: 0.2
+    entropy_coef: 0.0
+    learning_rate: 3.0e-4
+    schedule: adaptive
+    desired_kl: 0.01
+    num_learning_epochs: 5
+    num_mini_batches: 4
+    max_grad_norm: 1.0
+    value_loss_coef: 1.0
+
+# Ablations -- each is one --set flag on train_sim_lite.py (and the same flag on
+# eval.py when evaluating under the changed conditions):
+#   --mode direct                                         vs residual
+#   --set domain_rand.enabled=false                      (train nominal, test randomized)
+#   --set domain_rand.latency.extra_delay_steps=[0,0]    vs [0,3]  (latency sensitivity)
+#   --set env.reward.w_smooth=0.0                        vs 0.03   (smoothness cost)
+#   --set ppo.sim_lite.curriculum_fraction=0             vs 0.6    (curriculum on/off)
+#   --set env.baseline.baseline_gains=fast                vs robust (residual on the fragile base)
+#   --set env.baseline.baseline_info=privileged           vs nominal (old, unfair information)
+# eval.py always evaluates under configs/domain_rand.yaml, so ablations trained
+# under a different distribution are still tested under the same conditions.

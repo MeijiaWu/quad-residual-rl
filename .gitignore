@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+results/*
+!results/.gitkeep
+!results/report.md
+!results/isaac_report.md
+logs/
+.venv/

@@ -1,0 +1,27 @@
+# Sim-to-real. Read by sim_lite (via quad_residual.config) and mirrored by the
+# Isaac Lab env. The curriculum ramps every range from the nominal value
+# (QuadParams; no wind, no extra delay, no sensor noise) out to the full
+# [lo, hi] below, so early training really does see nominal physics.
+enabled: true
+curriculum_steps: 3000000     # Isaac Lab only; sim_lite uses ppo.sim_lite.curriculum_fraction
+
+parameter:
+  mass_range: [0.75, 1.05]        # kg
+  inertia_scale: [0.8, 1.25]
+  thrust_scale: [0.85, 1.15]
+  motor_tau_range: [0.02, 0.06]   # s  -- set from scripts/sysid.py on real logs
+  drag_range: [0.05, 0.20]
+
+latency:
+  extra_delay_steps: [0, 3]       # physics steps (4 ms each) on top of the nominal 1,
+                                  # drawn per env per episode
+
+disturbance:
+  wind_range: [0.0, 3.0]          # m/s, constant per episode
+  gust_std: 0.4                   # m/s per step
+
+observation:
+  obs_noise_pos: 0.01             # m
+  obs_noise_vel: 0.05             # m/s
+  obs_noise_omega: 0.02           # rad/s
+  obs_bias_pos: 0.02              # m, constant per episode

@@ -1,0 +1,13 @@
+# Core (CPU path -- sim_lite, tests, eval, sysid, latency bench)
+numpy>=1.24
+pyyaml>=6.0
+
+# Training on the CPU path
+stable-baselines3>=2.3
+gymnasium>=0.29
+torch>=2.1
+
+# Isaac Lab path (NOT installable with pip -- follow NVIDIA's installer):
+#   Isaac Sim 4.x + Isaac Lab 2.x, CUDA GPU required
+#   https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html
+#   rsl-rl-lib>=2.3
